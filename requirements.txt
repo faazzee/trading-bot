@@ -1,6 +1,5 @@
 python-telegram-bot==20.7
 apscheduler==3.10.4
-yfinance==0.2.36
-requests==2.31.0
-python-dotenv==1.0.0
-httpx==0.24.1
+yfinance
+requests
+python-dotenv
