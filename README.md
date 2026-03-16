@@ -186,3 +186,4 @@ stock_tracker_bot/
 **Support multiple users** — works out of the box; each Telegram user has their own portfolio, watchlist, and settings.
 "# trading-bot" 
 "# trading-bot" 
+"# trading-bot" 
