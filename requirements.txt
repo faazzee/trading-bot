@@ -1,6 +1,1 @@
-python-telegram-bot==21.3
-yfinance==0.2.40
-pandas==2.2.2
-numpy==1.26.4
-APScheduler==3.10.4
-python-dotenv==1.0.1
+(echo python-telegram-bot==20.7 & echo apscheduler==3.10.4 & echo yfinance==0.2.38 & echo requests==2.31.0 & echo python-dotenv==1.0.0 & echo pandas==2.1.4 & echo numpy==1.26.4) > requirements.txt
