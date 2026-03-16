@@ -1,10 +1,7 @@
-python -c "
-with open('requirements.txt', 'w') as f:
-    f.write('python-telegram-bot==20.7\n')
-    f.write('apscheduler==3.10.4\n')
-    f.write('yfinance==0.2.38\n')
-    f.write('requests==2.31.0\n')
-    f.write('python-dotenv==1.0.0\n')
-    f.write('pandas==2.1.4\n')
-    f.write('numpy==1.26.4\n')
-"
+python-telegram-bot==20.7
+apscheduler==3.10.4
+yfinance==0.2.38
+requests==2.31.0
+python-dotenv==1.0.0
+pandas==2.1.4
+numpy==1.26.4
