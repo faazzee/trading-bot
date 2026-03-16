@@ -184,3 +184,4 @@ stock_tracker_bot/
 **Add more news keywords** — edit `IMPORTANT_NEWS_KEYWORDS` list in `config.py`.
 
 **Support multiple users** — works out of the box; each Telegram user has their own portfolio, watchlist, and settings.
+"# trading-bot" 
