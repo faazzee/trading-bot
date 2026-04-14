@@ -77,11 +77,36 @@ def get_quick_summary(symbol: str) -> dict:
 
 
 def get_stock_news(symbol: str, max_items: int = 5) -> list:
-    """Return recent news items as list of dicts."""
+    """Return recent news items as list of dicts (normalised for both old and new yfinance formats)."""
     try:
         ticker = yf.Ticker(symbol)
-        news   = ticker.news or []
-        return news[:max_items]
+        raw    = ticker.news or []
+        result = []
+        for item in raw[:max_items]:
+            # New yfinance format: data is nested inside 'content'
+            content = item.get("content", {})
+            if content:
+                pub_date = content.get("pubDate", "")
+                try:
+                    from datetime import timezone
+                    from dateutil import parser as dateutil_parser
+                    ts = int(dateutil_parser.parse(pub_date).replace(tzinfo=timezone.utc).timestamp()) if pub_date else None
+                except Exception:
+                    ts = None
+
+                url = (content.get("canonicalUrl") or {}).get("url", "") or \
+                      (content.get("clickThroughUrl") or {}).get("url", "")
+
+                result.append({
+                    "title":               content.get("title", ""),
+                    "link":                url,
+                    "publisher":           (content.get("provider") or {}).get("displayName", ""),
+                    "providerPublishTime": ts,
+                })
+            else:
+                # Old yfinance format — pass through as-is
+                result.append(item)
+        return result
     except Exception as e:
         logger.error(f"[tracker] get_stock_news({symbol}): {e}")
         return []
