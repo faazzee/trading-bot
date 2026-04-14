@@ -1,0 +1,7 @@
+python-telegram-bot==20.7
+apscheduler==3.10.4
+yfinance
+requests
+python-dotenv
+transformers>=4.35.0
+torch>=2.0.0
