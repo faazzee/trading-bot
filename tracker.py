@@ -3,6 +3,7 @@ tracker.py — Fetch stock prices, metadata, and news via yfinance.
 """
 
 import logging
+from datetime import datetime
 import yfinance as yf
 import pandas as pd
 
@@ -89,8 +90,8 @@ def get_stock_news(symbol: str, max_items: int = 5) -> list:
                 pub_date = content.get("pubDate", "")
                 try:
                     from datetime import timezone
-                    from dateutil import parser as dateutil_parser
-                    ts = int(dateutil_parser.parse(pub_date).replace(tzinfo=timezone.utc).timestamp()) if pub_date else None
+                    dt = datetime.strptime(pub_date, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+                    ts = int(dt.timestamp())
                 except Exception:
                     ts = None
 
