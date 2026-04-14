@@ -385,14 +385,47 @@ async def analyze_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     signals_block = "\n".join(a.get("signals") or ["No clear signals detected"])
 
-    # ── Fix: extract formatted values before building the f-string ──
     rsi_str  = "{:.1f}".format(a["rsi"])  if a.get("rsi")  else "N/A"
     macd_str = "{:+.3f}".format(a["macd"]) if a.get("macd") else "N/A"
 
+    # ── Fetch fundamentals ──────────────────────────────────
+    fund = await asyncio.to_thread(get_fundamentals, symbol)
+    scoring = await asyncio.to_thread(score_fundamentals, fund) if "error" not in fund else {}
+
+    def _pf(v, is_ratio=True):
+        if v is None:
+            return "N/A"
+        return f"{v * 100:+.1f}%" if is_ratio else f"{v:+.1f}%"
+
+    def _vf(v, d=2):
+        return f"{v:.{d}f}" if v is not None else "N/A"
+
+    upside = scoring.get("analyst_upside_pct")
+    upside_str = f"{upside:+.1f}%" if upside is not None else "N/A"
+    fund_score = scoring.get("total_score")
+    fund_label = scoring.get("label", "")
+    fund_line  = f"🎯 Fund Score: *{fund_score:.0f}/100 — {fund_label}*\n\n" if fund_score is not None else ""
+
+    rec_map = {1: "Strong Buy", 2: "Buy", 3: "Hold", 4: "Sell", 5: "Strong Sell"}
+    rec_val = fund.get("recommendation_mean") if "error" not in fund else None
+    rec_str = f"{rec_val:.1f} ({rec_map.get(round(rec_val), '?')})" if rec_val is not None else "N/A"
+
+    fundamentals_block = (
+        f"*── Fundamentals ──*\n"
+        f"• EPS Growth:     {_pf(fund.get('eps_growth'))}\n"
+        f"• Revenue Growth: {_pf(fund.get('revenue_growth'))}\n"
+        f"• Profit Margin:  {_pf(fund.get('profit_margin'))}\n"
+        f"• ROE:            {_pf(fund.get('return_on_equity'))}\n"
+        f"• Forward P/E:    {_vf(fund.get('forward_pe'))}\n"
+        f"• Debt/Equity:    {_vf(fund.get('debt_to_equity'))}\n"
+        f"• Analyst Target: {upside_str} upside\n"
+        f"• Recommend:      {rec_str}\n"
+    ) if "error" not in fund else ""
+
     text = (
-        f"🔬 *Technical Analysis — {symbol}*\n\n"
+        f"🔬 *Analysis — {symbol}*\n\n"
         f"💰 Price: *{fmt_price(a.get('current_price'))}*\n\n"
-        f"*── Indicators ──*\n"
+        f"*── Technicals ──*\n"
         f"• RSI (14):  `{rsi_str}`\n"
         f"• SMA 20:    {fmt_price(a.get('sma_20'))}\n"
         f"• SMA 50:    {fmt_price(a.get('sma_50'))}\n"
@@ -407,9 +440,11 @@ async def analyze_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"• From Low:  +{a.get('pct_from_low', 0):.1f}%\n"
         f"• From High: {a.get('pct_from_high', 0):.1f}%\n"
         f"• Volume:    {a.get('volume_ratio', 1):.1f}× average\n\n"
+        f"{fundamentals_block}\n"
         f"*── Signals ──*\n"
         f"{signals_block}\n\n"
-        f"🎯 *Overall: {a.get('overall_signal', 'N/A')}*\n"
+        f"{fund_line}"
+        f"🎯 *Tech: {a.get('overall_signal', 'N/A')}*\n"
         f"_Score: {a.get('score', 50)}/100_\n\n"
         f"⚠️ _Not financial advice. Do your own research._"
     )
